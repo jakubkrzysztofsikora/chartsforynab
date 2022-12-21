@@ -1,5 +1,16 @@
-import { List } from "../../src/saving-plan";
+import { useRouter } from "next/router";
+import { List, SavingPlanContext } from "../../src/saving-plan";
 
 export default function SavingPlansPage() {
-  return <List />;
+  const router = useRouter();
+
+  return (
+    <SavingPlanContext.Provider
+      value={{
+        goToNewWizard: () => router.push("/saving-plans/new"),
+      }}
+    >
+      <List />
+    </SavingPlanContext.Provider>
+  );
 }

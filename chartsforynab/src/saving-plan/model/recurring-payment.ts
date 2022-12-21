@@ -1,5 +1,5 @@
 export type RecurringPayment = {
-  recurringPaymentId: string;
+  id: string;
   amount: number;
   subcategory: string;
   payee: string;

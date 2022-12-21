@@ -11,34 +11,60 @@ import {
 } from "@mui/material";
 import React from "react";
 import { RecurringPayment } from "../model/recurring-payment";
-import { SavingPlan } from "../model/saving-plan";
+import { Savings } from "../model/savings";
 import { Subcategory } from "../model/subcategory";
-import { Textfield } from "./Textfield";
+import { useSavingPlanContext } from "./context/saving-plan-context";
+import { Textfield } from "./textfield";
 
 export type NewProps = { className?: string };
 
 export const New: React.FC<NewProps> = ({ className }) => {
-  const [plan, setPlan] = React.useState<SavingPlan>([]);
+  const [name, setName] = React.useState<string>();
+  const [plan, setPlan] = React.useState<Savings>([]);
   const [target, setTarget] = React.useState<number>(0);
+
+  const { createService, goToApprovalPage } = useSavingPlanContext();
+
   const cumulativeSavingsPerMonth = React.useMemo<number>(
     () =>
-      plan.reduce(
-        (accu, current) =>
-          accu +
-          (current.percentToSave *
-            ((current.entity as RecurringPayment).amount ||
-              (current.entity as Subcategory).avgAmount)) /
-            100,
-        0
-      ),
+      Math.round(
+        plan.reduce(
+          (accu, current) =>
+            accu +
+            (current.percentToSave *
+              ((current.entity as RecurringPayment).amount ||
+                (current.entity as Subcategory).avgAmount)) /
+              100,
+          0
+        ) * 100
+      ) / 100,
     [plan]
   );
   const recurrings = mockedRecurringPayments;
   const subcategories = mockedSubcategories;
 
+  const createDraft = React.useCallback(async () => {
+    if (name && plan && createService && goToApprovalPage) {
+      const id = await createService({ name, savings: plan, target });
+      console.log("Created draft", plan);
+      goToApprovalPage(id);
+    } else {
+      console.error(
+        "Empty properties",
+        name,
+        plan,
+        createService,
+        goToApprovalPage
+      );
+    }
+  }, [createService, goToApprovalPage, name, plan, target]);
+
   return (
     <div className={className}>
-      <Textfield defaultValue="New Spending Plan" />
+      <Textfield
+        defaultValue="New Spending Plan"
+        onChange={(value) => setName(value as string)}
+      />
       <Chip label="Draft" />
       <Typography variant="h3">I want to save</Typography>
       <Textfield
@@ -48,7 +74,7 @@ export const New: React.FC<NewProps> = ({ className }) => {
       />
       {Boolean(cumulativeSavingsPerMonth) && (
         <Typography variant="h3">
-          In {target / cumulativeSavingsPerMonth} months
+          In {Math.ceil(target / cumulativeSavingsPerMonth)} months
         </Typography>
       )}
 
@@ -58,13 +84,10 @@ export const New: React.FC<NewProps> = ({ className }) => {
       <List>
         {recurrings.map((payment) => {
           const savedPayment = plan.find(
-            (x) =>
-              x.type === "recurring" &&
-              (x.entity as RecurringPayment).recurringPaymentId ===
-                payment.recurringPaymentId
+            (x) => x.type === "recurring" && x.entity.id === payment.id
           );
           return (
-            <ListItem key={payment.recurringPaymentId}>
+            <ListItem key={payment.id}>
               <ListItemAvatar>
                 <Checkbox
                   onChange={(_, checked) =>
@@ -81,9 +104,7 @@ export const New: React.FC<NewProps> = ({ className }) => {
                           plan.filter(
                             (x) =>
                               x.type !== "recurring" ||
-                              (x.entity as RecurringPayment)
-                                .recurringPaymentId !==
-                                payment.recurringPaymentId
+                              x.entity.id !== payment.id
                           )
                         )
                   }
@@ -98,7 +119,7 @@ export const New: React.FC<NewProps> = ({ className }) => {
                   label={`+ ${
                     (payment.amount * savedPayment.percentToSave) / 100
                   }`}
-                  color="primary"
+                  color="success"
                   variant="outlined"
                 />
               )}
@@ -110,11 +131,6 @@ export const New: React.FC<NewProps> = ({ className }) => {
       <Typography variant="h3">Which categories to reduce?</Typography>
       <List>
         {subcategories.map((subcategory) => {
-          const savedCategory = plan.find(
-            (x) =>
-              x.type === "subcategory" &&
-              (x.entity as Subcategory).id === subcategory.id
-          );
           return (
             <ListItem key={subcategory.id}>
               <ListItemAvatar>
@@ -124,8 +140,13 @@ export const New: React.FC<NewProps> = ({ className }) => {
                   max={100}
                   defaultValue={0}
                   onChange={(value) =>
-                    setPlan((plan) =>
-                      savedCategory
+                    setPlan((plan) => {
+                      const savedCategory = plan.find(
+                        (x) =>
+                          x.type === "subcategory" &&
+                          x.entity.id === subcategory.id
+                      );
+                      return savedCategory
                         ? [
                             ...plan.filter((x) => x !== savedCategory),
                             {
@@ -140,8 +161,8 @@ export const New: React.FC<NewProps> = ({ className }) => {
                               entity: subcategory,
                               percentToSave: value as number,
                             },
-                          ]
-                    )
+                          ];
+                    })
                   }
                 />{" "}
                 <span>%</span>
@@ -150,26 +171,48 @@ export const New: React.FC<NewProps> = ({ className }) => {
                 primary={`${subcategory.name} (AVG: ${subcategory.avgAmount})`}
                 secondary={subcategory.category}
               />
-              {savedCategory && savedCategory.percentToSave !== 0 && (
-                <Chip
-                  label={`+ ${
-                    (subcategory.avgAmount * savedCategory.percentToSave) / 100
-                  }`}
-                  color="primary"
-                  variant="outlined"
-                />
-              )}
+              {plan.some(
+                (x) =>
+                  x.type === "subcategory" && x.entity.id === subcategory.id
+              ) &&
+                plan.find(
+                  (x) =>
+                    x.type === "subcategory" && x.entity.id === subcategory.id
+                )!.percentToSave !== 0 && (
+                  <Chip
+                    label={`+ ${
+                      (subcategory.avgAmount *
+                        plan.find(
+                          (x) =>
+                            x.type === "subcategory" &&
+                            x.entity.id === subcategory.id
+                        )!.percentToSave) /
+                      100
+                    }`}
+                    color="success"
+                    variant="outlined"
+                  />
+                )}
             </ListItem>
           );
         })}
       </List>
 
-      <Divider />
-      <Typography variant="h3">
-        {cumulativeSavingsPerMonth} per month
-      </Typography>
+      {plan.length !== 0 && (
+        <>
+          <Divider />
+          <Typography variant="h3">
+            {cumulativeSavingsPerMonth} per month
+          </Typography>
+        </>
+      )}
 
-      <Button color="primary" variant="contained">
+      <Button
+        disabled={plan.length === 0 || !Boolean(name)}
+        color="primary"
+        variant="contained"
+        onClick={createDraft}
+      >
         Create
       </Button>
     </div>
@@ -181,7 +224,7 @@ const mockedRecurringPayments: Array<RecurringPayment> = [
     payee: "HBO",
     amount: 29.9,
     subcategory: "VOD / Muzyka",
-    recurringPaymentId: "test",
+    id: "test",
   },
 ];
 const mockedSubcategories: Array<Subcategory> = [

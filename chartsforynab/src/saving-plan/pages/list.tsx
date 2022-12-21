@@ -11,18 +11,18 @@ import {
 import LaunchIcon from "@mui/icons-material/Launch";
 import TollIcon from "@mui/icons-material/Toll";
 import AddBoxIcon from "@mui/icons-material/AddBox";
-import { useRouter } from "next/router";
+import { useSavingPlanContext } from "./context";
 
 export type ListProps = { className?: string };
 
 export const List: React.FC<ListProps> = ({ className }) => {
-  const router = useRouter();
+  const { goToNewWizard } = useSavingPlanContext();
 
   return (
     <Paper className={className}>
       <div className="header">
         <Typography variant="h1">Your saving plans</Typography>
-        <IconButton onClick={() => router.push("/saving-plans/new")}>
+        <IconButton onClick={goToNewWizard}>
           <AddBoxIcon />
         </IconButton>
       </div>
