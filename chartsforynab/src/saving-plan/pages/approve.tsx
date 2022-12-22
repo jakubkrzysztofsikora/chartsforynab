@@ -14,6 +14,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import { useSavingPlanContext } from "./context";
 
 ChartJS.register(
   CategoryScale,
@@ -27,6 +28,7 @@ ChartJS.register(
 export type ApproveProps = { className?: string; plan: Plan };
 
 export const Approve: React.FC<ApproveProps> = ({ className, plan }) => {
+  const { goBack, approvePlan, goToPlanDetails } = useSavingPlanContext();
   const savingsTotal =
     Math.round(
       plan.savings.reduce(
@@ -76,6 +78,10 @@ export const Approve: React.FC<ApproveProps> = ({ className, plan }) => {
     ],
   };
 
+  const approve = () => {
+    return approvePlan?.(plan.id).then(() => goToPlanDetails?.(plan.id));
+  };
+
   return (
     <div className={className}>
       <Typography variant="h2">{plan.name}</Typography>
@@ -108,10 +114,10 @@ export const Approve: React.FC<ApproveProps> = ({ className, plan }) => {
       </ol>
       <Bar options={options} data={data} />
 
-      <Button variant="contained" color="info">
+      <Button variant="contained" color="info" onClick={goBack}>
         Back
       </Button>
-      <Button variant="contained" color="primary">
+      <Button variant="contained" color="primary" onClick={approve}>
         Approve
       </Button>
     </div>

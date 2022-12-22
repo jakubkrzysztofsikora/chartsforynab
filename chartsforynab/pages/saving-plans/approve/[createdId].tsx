@@ -4,7 +4,18 @@ import { Approve, SavingPlanContext } from "../../../src/saving-plan";
 export default function ApprovePlanPage() {
   const router = useRouter();
   return (
-    <SavingPlanContext.Provider value={{}}>
+    <SavingPlanContext.Provider
+      value={{
+        goBack: () =>
+          router.push(`/saving-plans/new/${router.query.createdId}`),
+        approvePlan: async (id) => {
+          await fetch(`/api/savings-plans/${id}/approve`, {
+            method: "PUT",
+          });
+        },
+        goToPlanDetails: (id) => router.push(`/saving-plans/${id}`),
+      }}
+    >
       <Approve
         plan={{
           name: router.query.createdId as string,

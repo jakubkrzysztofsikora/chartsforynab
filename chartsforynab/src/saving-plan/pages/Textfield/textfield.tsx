@@ -3,6 +3,7 @@ import React from "react";
 
 export type TextfieldProps = {
   defaultValue?: string | number;
+  placeholder?: string | number;
   className?: string;
   type?: "number" | "text";
   max?: number;
@@ -16,9 +17,13 @@ export const Textfield: React.FC<TextfieldProps> = ({
   min,
   max,
   defaultValue,
+  placeholder,
   onChange,
 }) => {
-  const [value, setValue] = React.useState<string | number | undefined>();
+  console.log({ defaultValue });
+  const [value, setValue] = React.useState<string | number | undefined>(
+    defaultValue
+  );
   const [focused, setFocused] = React.useState<boolean>(false);
   const dirty = focused || (!focused && value);
 
@@ -35,13 +40,14 @@ export const Textfield: React.FC<TextfieldProps> = ({
       className={`${className} ${!dirty ? "clean" : ""}`}
       variant="standard"
       type={type}
+      value={
+        focused && !value
+          ? ""
+          : value || (type === "number" ? placeholder : `${placeholder} *`)
+      }
       inputProps={{
         min,
         max,
-        value:
-          focused && !value
-            ? ""
-            : value || (type === "number" ? defaultValue : `${defaultValue} *`),
       }}
     />
   );

@@ -1,16 +1,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { create } from "../../src/saving-plan/api/create";
+import { approve } from "../../../../src/saving-plan/api/approve";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<{ data: any }>
 ) {
   switch (req.method) {
-    case "POST":
-      res.writeHead(201);
+    case "PUT":
+      res.writeHead(200);
       res.end(
         JSON.stringify({
-          data: { createdId: await create(JSON.parse(req.body)) },
+          data: { id: await approve(JSON.parse(req.body)) },
         })
       );
       break;

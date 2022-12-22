@@ -5,6 +5,9 @@ type SavingPlanContextType = {
   createService?: CreateDraft;
   goToApprovalPage?: (id: string) => void;
   goToNewWizard?: () => void;
+  goBack?: () => void;
+  goToPlanDetails?: (id: string) => void;
+  approvePlan?: (id: string) => Promise<void>;
 };
 
 export const SavingPlanContext = React.createContext<SavingPlanContextType>({});

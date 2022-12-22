@@ -10,18 +10,22 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
+import { Plan } from "../model/plan";
 import { RecurringPayment } from "../model/recurring-payment";
 import { Savings } from "../model/savings";
 import { Subcategory } from "../model/subcategory";
 import { useSavingPlanContext } from "./context/saving-plan-context";
 import { Textfield } from "./textfield";
 
-export type NewProps = { className?: string };
+export type NewProps = { className?: string; fromDraft?: Plan };
 
-export const New: React.FC<NewProps> = ({ className }) => {
-  const [name, setName] = React.useState<string>();
-  const [plan, setPlan] = React.useState<Savings>([]);
-  const [target, setTarget] = React.useState<number>(0);
+export const New: React.FC<NewProps> = ({ className, fromDraft }) => {
+  const [recurrings, setRecurrings] = React.useState<RecurringPayment[]>([]);
+  const [subcategories, setSubcategories] = React.useState<Subcategory[]>([]);
+
+  const [name, setName] = React.useState<string>(fromDraft?.name || "");
+  const [plan, setPlan] = React.useState<Savings>(fromDraft?.savings || []);
+  const [target, setTarget] = React.useState<number>(fromDraft?.target || 0);
 
   const { createService, goToApprovalPage } = useSavingPlanContext();
 
@@ -40,8 +44,17 @@ export const New: React.FC<NewProps> = ({ className }) => {
       ) / 100,
     [plan]
   );
-  const recurrings = mockedRecurringPayments;
-  const subcategories = mockedSubcategories;
+
+  React.useEffect(() => {
+    setRecurrings(mockedRecurringPayments);
+    setSubcategories(mockedSubcategories);
+  }, []);
+
+  React.useEffect(() => {
+    setName((name) => fromDraft?.name || name);
+    setPlan((plan) => fromDraft?.savings || plan);
+    setTarget((target) => fromDraft?.target || target);
+  }, [fromDraft?.name, fromDraft?.savings, fromDraft?.target]);
 
   const createDraft = React.useCallback(async () => {
     if (name && plan && createService && goToApprovalPage) {
@@ -62,13 +75,15 @@ export const New: React.FC<NewProps> = ({ className }) => {
   return (
     <div className={className}>
       <Textfield
-        defaultValue="New Spending Plan"
+        placeholder="New Spending Plan"
+        defaultValue={name}
         onChange={(value) => setName(value as string)}
       />
       <Chip label="Draft" />
       <Typography variant="h3">I want to save</Typography>
       <Textfield
         defaultValue={target}
+        placeholder="00.00"
         type="number"
         onChange={(value) => setTarget(value as number)}
       />
@@ -90,6 +105,7 @@ export const New: React.FC<NewProps> = ({ className }) => {
             <ListItem key={payment.id}>
               <ListItemAvatar>
                 <Checkbox
+                  defaultChecked={plan.some((x) => x.entity.id === payment.id)}
                   onChange={(_, checked) =>
                     checked
                       ? setPlan((plan) => [
@@ -138,7 +154,11 @@ export const New: React.FC<NewProps> = ({ className }) => {
                   type="number"
                   min={0}
                   max={100}
-                  defaultValue={0}
+                  defaultValue={
+                    plan.find((x) => x.entity.id === subcategory.id)
+                      ?.percentToSave || 0
+                  }
+                  placeholder={0}
                   onChange={(value) =>
                     setPlan((plan) => {
                       const savedCategory = plan.find(
@@ -213,7 +233,7 @@ export const New: React.FC<NewProps> = ({ className }) => {
         variant="contained"
         onClick={createDraft}
       >
-        Create
+        {fromDraft ? "Amend" : "Create"}
       </Button>
     </div>
   );
@@ -224,9 +244,9 @@ const mockedRecurringPayments: Array<RecurringPayment> = [
     payee: "HBO",
     amount: 29.9,
     subcategory: "VOD / Muzyka",
-    id: "test",
+    id: "test1",
   },
 ];
 const mockedSubcategories: Array<Subcategory> = [
-  { avgAmount: 2123, name: "Spozywcze", category: "Dom", id: "test" },
+  { avgAmount: 2123, name: "Spozywcze", category: "Dom", id: "test2" },
 ];
