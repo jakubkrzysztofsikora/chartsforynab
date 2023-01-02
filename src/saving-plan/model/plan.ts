@@ -9,4 +9,5 @@ export type DraftPlan = {
 export type Plan = DraftPlan & {
   id: string;
   status: "draft" | "ongoing" | "discarded";
+  started: Date;
 };

@@ -2,7 +2,6 @@ import { Button, Typography } from "@mui/material";
 import { Plan } from "../model/plan";
 import { RecurringPayment } from "../model/recurring-payment";
 import { Subcategory } from "../model/subcategory";
-import dayjs from "dayjs";
 
 import {
   Chart as ChartJS,
@@ -15,6 +14,9 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { useSavingPlanContext } from "./context";
+import { SavingChart } from "./saving-chart";
+import { useSavingPlan } from "./hooks";
+import React from "react";
 
 ChartJS.register(
   CategoryScale,
@@ -29,58 +31,11 @@ export type ApproveProps = { className?: string; plan: Plan };
 
 export const Approve: React.FC<ApproveProps> = ({ className, plan }) => {
   const { goBack, approvePlan, goToPlanDetails } = useSavingPlanContext();
-  const savingsTotal =
-    Math.round(
-      plan.savings.reduce(
-        (sum, single) =>
-          sum +
-          single.percentToSave *
-            ((single.entity as RecurringPayment)?.amount ||
-              (single.entity as Subcategory).avgAmount),
-        0
-      )
-    ) / 100;
-  const deadline = Math.ceil(plan.target / savingsTotal);
-  const includeCurrentMonth = (numberOfMonths: number) => ++numberOfMonths;
-  const cumulativeSavingsChartData = Array.from(
-    { length: includeCurrentMonth(deadline) },
-    (_, i) => ({
-      savings: i * savingsTotal,
-      months: dayjs().add(i, "month").toDate(),
-    })
-  );
+  const { deadline, savingsTotal } = useSavingPlan();
 
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      title: {
-        display: true,
-        text: "Saving Simulation",
-      },
-    },
-  };
-
-  const labels = cumulativeSavingsChartData.map(
-    (x) => `${x.months.getMonth() + 1}/${x.months.getFullYear()}`
-  );
-
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: "Cumulative savings",
-        data: cumulativeSavingsChartData.map((x) => x.savings),
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
-      },
-    ],
-  };
-
-  const approve = () => {
+  const approve = React.useCallback(() => {
     return approvePlan?.(plan.id).then(() => goToPlanDetails?.(plan.id));
-  };
+  }, [approvePlan, goToPlanDetails, plan.id]);
 
   return (
     <div className={className}>
@@ -112,8 +67,12 @@ export const Approve: React.FC<ApproveProps> = ({ className, plan }) => {
           }
         })}
       </ol>
-      <Bar options={options} data={data} />
-
+      <SavingChart
+        plan={plan}
+        title="Savings Simulation"
+        savingsTotal={savingsTotal}
+        deadline={deadline}
+      />
       <Button variant="contained" color="info" onClick={goBack}>
         Back
       </Button>

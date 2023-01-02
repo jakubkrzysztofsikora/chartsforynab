@@ -20,7 +20,6 @@ export const Textfield: React.FC<TextfieldProps> = ({
   placeholder,
   onChange,
 }) => {
-  console.log({ defaultValue });
   const [value, setValue] = React.useState<string | number | undefined>(
     defaultValue
   );

@@ -4,4 +4,5 @@ export {
   useSavingPlanContext,
   SavingPlanContext,
   Approve,
+  Details,
 } from "./pages";

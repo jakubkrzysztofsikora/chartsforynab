@@ -44,6 +44,7 @@ export default function ApprovePlanPage() {
             },
           ],
           status: "draft",
+          started: new Date(),
         }}
       />
     </SavingPlanContext.Provider>
