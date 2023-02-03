@@ -1,9 +1,25 @@
+import { instanceOfDraftPlan } from "lib/instanceOf";
 import { useRouter } from "next/router";
+import React from "react";
+import { DraftPlan } from "src/saving-plan/model/plan";
 import { New, SavingPlanContext } from "../../../src/saving-plan";
 
 export default function NewPlanPage(props: { draftId?: string }) {
   const router = useRouter();
   const { draftId } = props;
+  const [plan, setPlan] = React.useState<DraftPlan>();
+
+  React.useEffect(() => {
+    if (draftId) {
+      fetch(`/api/saving-plans/${draftId}`)
+        .then((res) => res.json())
+        .then((plan) => {
+          if (instanceOfDraftPlan(plan)) {
+            setPlan(plan);
+          }
+        });
+    }
+  }, [draftId]);
 
   return (
     <SavingPlanContext.Provider
@@ -29,40 +45,7 @@ export default function NewPlanPage(props: { draftId?: string }) {
         goToNewWizard: () => router.push("/saving-plans/new"),
       }}
     >
-      <New
-        fromDraft={
-          draftId
-            ? {
-                name: "test",
-                id: draftId as string,
-                target: 1000,
-                savings: [
-                  {
-                    entity: {
-                      payee: "HBO",
-                      amount: 29.9,
-                      id: "test1",
-                      subcategory: "VOD / Muzyka",
-                    },
-                    percentToSave: 100,
-                    type: "recurring",
-                  },
-                  {
-                    entity: {
-                      id: "test2",
-                      name: "Spozywcze",
-                      category: "Dom",
-                      avgAmount: 2123,
-                    },
-                    percentToSave: 5,
-                    type: "subcategory",
-                  },
-                ],
-                status: "draft",
-              }
-            : undefined
-        }
-      />
+      {draftId && !plan ? <>Loading</> : <New fromDraft={plan} />}
     </SavingPlanContext.Provider>
   );
 }

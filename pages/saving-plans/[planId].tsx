@@ -1,3 +1,4 @@
+import { instanceOfPlan } from "lib/instanceOf";
 import { useRouter } from "next/router";
 import React from "react";
 import { Details, SavingPlanContext } from "../../src/saving-plan";
@@ -5,35 +6,20 @@ import { Plan } from "../../src/saving-plan/model/plan";
 
 export default function PlanPage() {
   const router = useRouter();
-  const [plan, setPlan] = React.useState<Plan>({
-    id: router.query.planId as string,
-    name: "Test",
-    status: "ongoing",
-    target: 10000,
-    started: new Date(2022, 10, 1),
-    savings: [
-      {
-        entity: {
-          payee: "HBO",
-          amount: 29.9,
-          id: "test1",
-          subcategory: "VOD / Muzyka",
-        },
-        percentToSave: 100,
-        type: "recurring",
-      },
-      {
-        entity: {
-          id: "test2",
-          name: "Spozywcze",
-          category: "Dom",
-          avgAmount: 2123,
-        },
-        percentToSave: 5,
-        type: "subcategory",
-      },
-    ],
-  });
+  const [plan, setPlan] = React.useState<Plan>();
+
+  React.useEffect(() => {
+    if (router.query.createdId) {
+      fetch(`/api/saving-plans/${router.query.planId}`)
+        .then((res) => res.json())
+        .then((plan) => {
+          if (instanceOfPlan(plan)) {
+            setPlan(plan);
+          }
+        });
+    }
+  }, [router.query.createdId, router.query.planId]);
+
   return (
     <SavingPlanContext.Provider
       value={{

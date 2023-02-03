@@ -27,24 +27,26 @@ ChartJS.register(
   Legend
 );
 
-export type ApproveProps = { className?: string; plan: Plan };
+export type ApproveProps = { className?: string };
 
-export const Approve: React.FC<ApproveProps> = ({ className, plan }) => {
-  const { goBack, approvePlan, goToPlanDetails } = useSavingPlanContext();
+export const Approve: React.FC<ApproveProps> = ({ className }) => {
+  const { goBack, approvePlan, goToPlanDetails, plan } = useSavingPlanContext();
   const { deadline, savingsTotal } = useSavingPlan();
 
   const approve = React.useCallback(() => {
-    return approvePlan?.(plan.id).then(() => goToPlanDetails?.(plan.id));
-  }, [approvePlan, goToPlanDetails, plan.id]);
+    return plan?.id
+      ? approvePlan?.(plan.id).then(() => goToPlanDetails?.(plan.id!))
+      : null;
+  }, [approvePlan, goToPlanDetails, plan]);
 
   return (
     <div className={className}>
-      <Typography variant="h2">{plan.name}</Typography>
+      <Typography variant="h2">{plan?.name}</Typography>
       <Typography variant="h3">
-        Save {plan.target} in {deadline} months
+        Save {plan?.target} in {deadline} months
       </Typography>
       <ol>
-        {plan.savings.map((single) => {
+        {plan?.savings.map((single) => {
           if (single.type === "recurring") {
             const recurring: RecurringPayment =
               single.entity as RecurringPayment;
@@ -67,12 +69,14 @@ export const Approve: React.FC<ApproveProps> = ({ className, plan }) => {
           }
         })}
       </ol>
-      <SavingChart
-        plan={plan}
-        title="Savings Simulation"
-        savingsTotal={savingsTotal}
-        deadline={deadline}
-      />
+      {plan && (
+        <SavingChart
+          plan={plan}
+          title="Savings Simulation"
+          savingsTotal={savingsTotal}
+          deadline={deadline}
+        />
+      )}
       <Button variant="contained" color="info" onClick={goBack}>
         Back
       </Button>

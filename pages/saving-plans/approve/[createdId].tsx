@@ -1,8 +1,25 @@
+import { instanceOfDraftPlan } from "lib/instanceOf";
 import { useRouter } from "next/router";
+import React from "react";
+import { DraftPlan } from "src/saving-plan/model/plan";
 import { Approve, SavingPlanContext } from "../../../src/saving-plan";
 
 export default function ApprovePlanPage() {
   const router = useRouter();
+  const [plan, setPlan] = React.useState<DraftPlan>();
+
+  React.useEffect(() => {
+    if (router.query.createdId) {
+      fetch(`/api/saving-plans/${router.query.createdId}`)
+        .then((res) => res.json())
+        .then((plan) => {
+          if (instanceOfDraftPlan(plan)) {
+            setPlan(plan);
+          }
+        });
+    }
+  }, [router.query.createdId]);
+
   return (
     <SavingPlanContext.Provider
       value={{
@@ -11,42 +28,21 @@ export default function ApprovePlanPage() {
         approvePlan: async (id) => {
           await fetch(`/api/savings-plans/${id}/approve`, {
             method: "PUT",
+            body: JSON.stringify(plan),
           });
         },
         goToPlanDetails: (id) => router.push(`/saving-plans/${id}`),
+        plan: plan
+          ? {
+              ...plan,
+              status: "ongoing",
+              started: new Date(),
+              fromDraft: plan.id,
+            }
+          : undefined,
       }}
     >
-      <Approve
-        plan={{
-          name: router.query.createdId as string,
-          id: router.query.createdId as string,
-          target: 1000,
-          savings: [
-            {
-              entity: {
-                payee: "HBO",
-                amount: 29.9,
-                id: "test1",
-                subcategory: "VOD / Muzyka",
-              },
-              percentToSave: 100,
-              type: "recurring",
-            },
-            {
-              entity: {
-                id: "test2",
-                name: "Spozywcze",
-                category: "Dom",
-                avgAmount: 2123,
-              },
-              percentToSave: 5,
-              type: "subcategory",
-            },
-          ],
-          status: "draft",
-          started: new Date(),
-        }}
-      />
+      <Approve />
     </SavingPlanContext.Provider>
   );
 }

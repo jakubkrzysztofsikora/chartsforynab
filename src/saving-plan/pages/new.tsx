@@ -10,14 +10,14 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
-import { Plan } from "../model/plan";
+import { DraftPlan, Plan } from "../model/plan";
 import { RecurringPayment } from "../model/recurring-payment";
 import { Savings } from "../model/savings";
 import { Subcategory } from "../model/subcategory";
 import { useSavingPlanContext } from "./context/saving-plan-context";
 import { Textfield } from "./textfield";
 
-export type NewProps = { className?: string; fromDraft?: Plan };
+export type NewProps = { className?: string; fromDraft?: DraftPlan };
 
 export const New: React.FC<NewProps> = ({ className, fromDraft }) => {
   const [recurrings, setRecurrings] = React.useState<RecurringPayment[]>([]);
@@ -26,6 +26,7 @@ export const New: React.FC<NewProps> = ({ className, fromDraft }) => {
   const [name, setName] = React.useState<string>(fromDraft?.name || "");
   const [plan, setPlan] = React.useState<Savings>(fromDraft?.savings || []);
   const [target, setTarget] = React.useState<number>(fromDraft?.target || 0);
+  const [saving, setSaving] = React.useState<boolean>(false);
 
   const { createService, goToApprovalPage } = useSavingPlanContext();
 
@@ -58,7 +59,9 @@ export const New: React.FC<NewProps> = ({ className, fromDraft }) => {
 
   const createDraft = React.useCallback(async () => {
     if (name && plan && createService && goToApprovalPage) {
-      const id = await createService({ name, savings: plan, target });
+      setSaving(true);
+      const id = await createService({ name, savings: plan, target, id: "" });
+      setSaving(false);
       console.log("Created draft", plan);
       goToApprovalPage(id);
     } else {
@@ -228,7 +231,7 @@ export const New: React.FC<NewProps> = ({ className, fromDraft }) => {
       )}
 
       <Button
-        disabled={plan.length === 0 || !Boolean(name)}
+        disabled={saving || plan.length === 0 || !Boolean(name)}
         color="primary"
         variant="contained"
         onClick={createDraft}

@@ -1,3 +1,4 @@
+import { savingPlanDatabaseService } from "lib/saving-plan-database-service";
 import { NextApiRequest, NextApiResponse } from "next";
 import { create } from "../../../src/saving-plan/api/create";
 import { update } from "../../../src/saving-plan/api/update";
@@ -11,7 +12,12 @@ export default async function handler(
       res.writeHead(201);
       res.end(
         JSON.stringify({
-          data: { createdId: await create(JSON.parse(req.body)) },
+          data: {
+            createdId: await create(
+              JSON.parse(req.body),
+              savingPlanDatabaseService
+            ),
+          },
         })
       );
       break;
@@ -19,7 +25,12 @@ export default async function handler(
       res.writeHead(200);
       res.end(
         JSON.stringify({
-          data: { updatedId: await update(JSON.parse(req.body)) },
+          data: {
+            updatedId: await update(
+              JSON.parse(req.body),
+              savingPlanDatabaseService
+            ),
+          },
         })
       );
 
