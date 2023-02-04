@@ -6,21 +6,25 @@ import { Plan } from "../../src/saving-plan/model/plan";
 
 export default function PlanPage() {
   const router = useRouter();
-  const [plan, setPlan] = React.useState<Plan>();
+  const [plan, setPlan] = React.useState<Plan | "not-found">();
 
   React.useEffect(() => {
-    if (router.query.createdId) {
+    if (router.query.planId) {
       fetch(`/api/saving-plans/${router.query.planId}`)
         .then((res) => res.json())
         .then((plan) => {
           if (instanceOfPlan(plan)) {
             setPlan(plan);
+          } else {
+            setPlan("not-found");
           }
         });
     }
-  }, [router.query.createdId, router.query.planId]);
+  }, [router.query.planId]);
 
-  return (
+  return plan === "not-found" ? (
+    { notFound: true }
+  ) : (
     <SavingPlanContext.Provider
       value={{
         transactionService: {

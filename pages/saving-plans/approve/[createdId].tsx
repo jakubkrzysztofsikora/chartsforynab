@@ -6,7 +6,7 @@ import { Approve, SavingPlanContext } from "../../../src/saving-plan";
 
 export default function ApprovePlanPage() {
   const router = useRouter();
-  const [plan, setPlan] = React.useState<DraftPlan>();
+  const [plan, setPlan] = React.useState<DraftPlan | "not-found">();
 
   React.useEffect(() => {
     if (router.query.createdId) {
@@ -15,21 +15,30 @@ export default function ApprovePlanPage() {
         .then((plan) => {
           if (instanceOfDraftPlan(plan)) {
             setPlan(plan);
+          } else {
+            console.log({ plan });
+            setPlan("not-found");
           }
         });
     }
   }, [router.query.createdId]);
 
-  return (
+  return plan === "not-found" ? (
+    <>Not found placeholder</>
+  ) : (
     <SavingPlanContext.Provider
       value={{
         goBack: () =>
           router.push(`/saving-plans/new/${router.query.createdId}`),
         approvePlan: async (id) => {
-          await fetch(`/api/savings-plans/${id}/approve`, {
-            method: "PUT",
-            body: JSON.stringify(plan),
-          });
+          const inserted = await (
+            await fetch(`/api/saving-plans/${id}/approve`, {
+              method: "PUT",
+              body: JSON.stringify(plan),
+            })
+          ).json();
+
+          return inserted.id;
         },
         goToPlanDetails: (id) => router.push(`/saving-plans/${id}`),
         plan: plan

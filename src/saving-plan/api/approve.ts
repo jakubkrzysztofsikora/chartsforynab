@@ -1,5 +1,4 @@
 import { DatabaseService } from "../services/database-service";
-import { DraftPlan } from "../model/plan";
 import { instanceOfDraftPlan } from "lib/instanceOf";
 
 export const approve: (
@@ -10,10 +9,13 @@ export const approve: (
   const draft = await db.get(id);
 
   if (instanceOfDraftPlan(draft)) {
+    delete (draft as any)._id;
+    delete (draft as any).id;
+
     return db.insert({
       ...draft,
       status: "ongoing",
-      fromDraft: draft.id,
+      fromDraft: id,
       started: new Date(),
     });
   } else {

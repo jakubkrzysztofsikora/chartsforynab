@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Plan } from "../../model/plan";
+import { DraftPlan, Plan } from "../../model/plan";
 import { CreateDraft } from "../../ports";
 import { TransactionService } from "../../ports/transaction.service";
 
@@ -9,7 +9,11 @@ type SavingPlanContextType = {
   goToNewWizard?: () => void;
   goBack?: () => void;
   goToPlanDetails?: (id: string) => void;
-  approvePlan?: (id: string) => Promise<void>;
+  approvePlan?: (id: string) => Promise<string>;
+  getSavingPlansList?: (
+    page: number,
+    limit: number
+  ) => Promise<(Plan | DraftPlan)[]>;
   transactionService?: TransactionService;
   plan?: Plan;
 };

@@ -16,6 +16,8 @@ export default function NewPlanPage(props: { draftId?: string }) {
         .then((plan) => {
           if (instanceOfDraftPlan(plan)) {
             setPlan(plan);
+          } else {
+            setPlan(undefined);
           }
         });
     }

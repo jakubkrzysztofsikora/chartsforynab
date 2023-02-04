@@ -5,5 +5,5 @@ export const get: (
   id: string,
   db: DatabaseService
 ) => Promise<Plan | DraftPlan | null> = (id, db) => {
-  return db.get(id);
+  return db.get(id).catch(() => null);
 };

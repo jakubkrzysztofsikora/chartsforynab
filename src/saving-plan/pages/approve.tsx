@@ -35,7 +35,7 @@ export const Approve: React.FC<ApproveProps> = ({ className }) => {
 
   const approve = React.useCallback(() => {
     return plan?.id
-      ? approvePlan?.(plan.id).then(() => goToPlanDetails?.(plan.id!))
+      ? approvePlan?.(plan.id).then((id) => goToPlanDetails?.(id))
       : null;
   }, [approvePlan, goToPlanDetails, plan]);
 

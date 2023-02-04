@@ -11,9 +11,7 @@ export default async function handler(
       res.writeHead(200);
       res.end(
         JSON.stringify({
-          data: {
-            id: await approve(JSON.parse(req.body), savingPlanDatabaseService),
-          },
+          id: await approve(JSON.parse(req.body), savingPlanDatabaseService),
         })
       );
       break;

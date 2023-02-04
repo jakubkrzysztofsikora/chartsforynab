@@ -39,7 +39,7 @@ export const savingPlanDatabaseService: DatabaseService = {
           : DRAFT_SAVING_PLAN_COLLECTION_NAME
       )
       .updateOne({ _id: new ObjectId(id) }, { $set: doc });
-    return updated.upsertedId.toHexString();
+    return updated.matchedCount == 1 ? id : null;
   },
   get: async function (id) {
     const client = await clientPromise;
@@ -60,5 +60,25 @@ export const savingPlanDatabaseService: DatabaseService = {
 
     doc.id = doc?._id.toHexString();
     return doc.status ? (doc as Plan) : (doc as DraftPlan);
+  },
+  async list(page, limit) {
+    const client = await clientPromise;
+    const savingPlans = await client
+      .db(SAVING_PLAN_DB_NAME)
+      .collection(SAVING_PLAN_COLLECTION_NAME)
+      .find({}, { skip: (page - 1) * limit, limit })
+      .map((x: any) => ({ ...x, id: x._id.toHexString() }))
+      .toArray();
+    const drafts = await client
+      .db(SAVING_PLAN_DB_NAME)
+      .collection(DRAFT_SAVING_PLAN_COLLECTION_NAME)
+      .find(
+        { _id: { $nin: savingPlans.map((x) => new ObjectId(x.fromDraft)) } },
+        { skip: (page - 1) * limit, limit }
+      )
+      .map((x: any) => ({ ...x, id: x._id.toHexString() }))
+      .toArray();
+
+    return [...savingPlans, ...drafts];
   },
 };

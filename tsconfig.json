@@ -20,6 +20,12 @@
       "lib/*": ["lib/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "lib"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "lib",
+    "pages/api/saving-plans/[id]"
+  ],
   "exclude": ["node_modules"]
 }

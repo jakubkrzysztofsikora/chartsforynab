@@ -1,5 +1,6 @@
 import { savingPlanDatabaseService } from "lib/saving-plan-database-service";
 import { NextApiRequest, NextApiResponse } from "next";
+import { list } from "src/saving-plan/api/list";
 import { create } from "../../../src/saving-plan/api/create";
 import { update } from "../../../src/saving-plan/api/update";
 
@@ -31,6 +32,18 @@ export default async function handler(
               savingPlanDatabaseService
             ),
           },
+        })
+      );
+
+    case "GET":
+      res.writeHead(200);
+      res.end(
+        JSON.stringify({
+          data: await list(
+            parseInt(req.query.page as string),
+            parseInt(req.query.limit as string),
+            savingPlanDatabaseService
+          ),
         })
       );
 
