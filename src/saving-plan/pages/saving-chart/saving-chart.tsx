@@ -17,9 +17,10 @@ import React from "react";
 export type SavingChartProps = {
   className?: string;
   title: string;
-  plan: Plan;
-  deadline: number;
-  savingsTotal: number;
+  cumulativeSavingsChartData: {
+    savings: any;
+    months: Date;
+  }[];
   implementation?: { month: Date; saved: number }[];
 };
 
@@ -35,9 +36,7 @@ ChartJS.register(
 export const SavingChart: React.FC<SavingChartProps> = ({
   className,
   title,
-  plan,
-  deadline,
-  savingsTotal,
+  cumulativeSavingsChartData,
   implementation = [],
 }) => {
   const options = {
@@ -52,27 +51,11 @@ export const SavingChart: React.FC<SavingChartProps> = ({
       },
     },
   };
-  const includeCurrentMonth = (numberOfMonths: number) => ++numberOfMonths;
-  const cumulativeSavingsChartData = React.useMemo(
-    () =>
-      Boolean(deadline)
-        ? Array.from({ length: includeCurrentMonth(deadline) }, (_, i) => ({
-            savings:
-              implementation.reduce(
-                (accu, current) => accu + current.saved,
-                0
-              ) +
-              i * savingsTotal,
-            months: dayjs(plan.started).add(i, "month").toDate(),
-          }))
-        : [],
-    [deadline, implementation, plan.started, savingsTotal]
-  );
 
   const labels = cumulativeSavingsChartData.map(
     (x) => `${dayjs(x.months).format("MM/YYYY")}`
   );
-
+  console.log({ implementation });
   const data = {
     labels,
     datasets: [
@@ -80,7 +63,13 @@ export const SavingChart: React.FC<SavingChartProps> = ({
         ? [
             {
               label: "Cumulative savings",
-              data: implementation.map((x) => x.saved),
+              data: implementation
+                .filter((x) =>
+                  implementation.length === 0
+                    ? true
+                    : dayjs(x.month).startOf("month").isBefore(new Date())
+                )
+                .map((x) => x.saved),
               backgroundColor: "rgba(53, 162, 235, 0.5)",
             },
           ]
@@ -89,7 +78,9 @@ export const SavingChart: React.FC<SavingChartProps> = ({
         label: "Predicted savings",
         data: cumulativeSavingsChartData
           .filter((x) =>
-            implementation.length === 0 ? true : x.months >= new Date()
+            implementation.length === 0
+              ? true
+              : dayjs(x.months).endOf("month").isAfter(new Date())
           )
           .map((x) => x.savings),
         backgroundColor:

@@ -7,6 +7,7 @@ export default function SavingPlansPage() {
   return (
     <SavingPlanContext.Provider
       value={{
+        today: () => new Date(),
         goToNewWizard: () => router.push("/saving-plans/new"),
         getSavingPlansList: (page, limit) =>
           fetch(`/api/saving-plans?page=${page}&limit=${limit}`)

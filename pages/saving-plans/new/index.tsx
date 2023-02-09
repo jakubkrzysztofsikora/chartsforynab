@@ -26,6 +26,7 @@ export default function NewPlanPage(props: { draftId?: string }) {
   return (
     <SavingPlanContext.Provider
       value={{
+        today: () => new Date(),
         createService: async (plan) => {
           const response = await fetch("/api/saving-plans", {
             method: draftId ? "PUT" : "POST",

@@ -16,8 +16,11 @@ type SavingPlanContextType = {
   ) => Promise<(Plan | DraftPlan)[]>;
   transactionService?: TransactionService;
   plan?: Plan;
+  today: () => Date;
 };
 
-export const SavingPlanContext = React.createContext<SavingPlanContextType>({});
+export const SavingPlanContext = React.createContext<SavingPlanContextType>({
+  today: () => new Date(),
+});
 
 export const useSavingPlanContext = () => useContext(SavingPlanContext);

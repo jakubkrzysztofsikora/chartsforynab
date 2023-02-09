@@ -11,5 +11,11 @@ export type TransactionService = {
     month: number,
     year: number
   ) => Promise<Transaction[]>;
-  getTotalSpentPerMonth: () => Promise<{ month: Date; spent: number }[]>;
+  getTotalSpentPerMonth: (
+    ...queries: {
+      type: "recurring" | "subcategory";
+      payees?: string[];
+      subcategories?: string[];
+    }[]
+  ) => Promise<{ month: Date; spent: number }[]>;
 };

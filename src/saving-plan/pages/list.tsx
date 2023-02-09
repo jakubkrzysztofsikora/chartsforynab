@@ -15,11 +15,14 @@ import { useSavingPlanContext } from "./context";
 import { DraftPlan, Plan } from "../model/plan";
 import React from "react";
 import { useSavingPlan } from "./hooks";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 export type ListProps = { className?: string };
 
 export const List: React.FC<ListProps> = ({ className }) => {
   const { goToNewWizard, getSavingPlansList } = useSavingPlanContext();
+  const router = useRouter();
 
   const [plans, setPlans] = React.useState<(Plan | DraftPlan)[]>([]);
   const [page, setPage] = React.useState<number>(1);
@@ -43,13 +46,11 @@ export const List: React.FC<ListProps> = ({ className }) => {
             <ListItem
               key={plan.id}
               secondaryAction={
-                <IconButton
-                  href={`/saving-plans/${plan.id}`}
-                  edge="end"
-                  aria-label="open"
-                >
-                  <LaunchIcon />
-                </IconButton>
+                <Link href={`/saving-plans/${plan.id}`}>
+                  <IconButton edge="end" aria-label="open">
+                    <LaunchIcon />
+                  </IconButton>
+                </Link>
               }
             >
               <ListItemAvatar>

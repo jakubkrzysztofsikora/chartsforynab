@@ -25,7 +25,8 @@
     "**/*.ts",
     "**/*.tsx",
     "lib",
-    "pages/api/saving-plans/[id]"
+    "pages/api/saving-plans/[id]",
+    "src/setupTests.js"
   ],
   "exclude": ["node_modules"]
 }

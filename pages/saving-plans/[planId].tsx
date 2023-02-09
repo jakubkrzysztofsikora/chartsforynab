@@ -27,20 +27,11 @@ export default function PlanPage() {
   ) : (
     <SavingPlanContext.Provider
       value={{
+        today: () => new Date(),
         transactionService: {
           getByPayeeAndMonth(payee, month, year) {
             console.log({ payee, month, year });
-            return Promise.resolve([
-              {
-                month: 12,
-                year: 2022,
-                payee: "HBO",
-                amount: 29.9,
-                category: "",
-                subcategory: "",
-                id: " test",
-              },
-            ]);
+            return Promise.resolve([]);
           },
           getBySubcategoryAndMonth(subcategory, month, year) {
             console.log({ subcategory, month, year });
@@ -48,10 +39,7 @@ export default function PlanPage() {
           },
           getTotalSpentPerMonth() {
             return Promise.resolve([
-              {
-                month: new Date(2022, 1, 1),
-                spent: 400,
-              },
+              { month: new Date(2023, 1, 2), spent: 100 },
             ]);
           },
         },

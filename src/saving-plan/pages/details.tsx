@@ -1,9 +1,11 @@
-import { Chip, Tab, Tabs, Typography } from "@mui/material";
+import { Chip, IconButton, Tab, Tabs, Typography } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import dayjs from "dayjs";
 import React from "react";
 import { Transaction } from "../model/transaction";
 import { useSavingPlanContext } from "./context";
 import { useSavingPlan } from "./hooks";
+import { useRouter } from "next/router";
 
 export type DetailsProps = {
   className?: string;
@@ -97,9 +99,14 @@ export const Details: React.FC<DetailsProps> = ({ className }) => {
     });
   }, [transactionService, planned.subcategories, chosenMonth]);
 
+  const router = useRouter();
+
   return (
     <div className={className}>
       <header>
+        <IconButton onClick={router.back}>
+          <ArrowBackIcon />
+        </IconButton>
         <Typography variant="h1">{name}</Typography>
         <Chip variant="outlined" color="info" label={status} />
       </header>

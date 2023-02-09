@@ -28,6 +28,7 @@ export default function ApprovePlanPage() {
   ) : (
     <SavingPlanContext.Provider
       value={{
+        today: () => new Date(),
         goBack: () =>
           router.push(`/saving-plans/new/${router.query.createdId}`),
         approvePlan: async (id) => {
